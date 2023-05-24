@@ -13,7 +13,7 @@ const getAllCards = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       res.status(ERROR_CODES.DEFAULT_ERROR).send({
-        message: 'Internal Server Error',
+        message: 'На сервере произошла ошибка',
       });
     });
 };
@@ -33,7 +33,7 @@ const postCard = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error',
+      message: 'На сервере произошла ошибка',
     });
   });
 }
@@ -56,7 +56,7 @@ const deleteCard = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error'
+      message: 'На сервере произошла ошибка'
     })
   });
 }
@@ -80,7 +80,7 @@ const putLike = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error'
+      message: 'На сервере произошла ошибка'
     })
   });
 }
@@ -106,7 +106,7 @@ const deleteLike = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error'
+      message: 'На сервере произошла ошибка'
     })
   });
 }

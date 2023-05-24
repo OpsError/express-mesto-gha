@@ -21,7 +21,7 @@ const creacteUser = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: err.name
+      message: 'На сервере произошла ошибка'
     })
   });
 }
@@ -43,7 +43,7 @@ const getUserInfo = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error',
+      message: 'На сервере произошла ошибка',
     });
   });
 }
@@ -54,7 +54,7 @@ const getAllUsers = (req, res) => {
   .then(user => res.send({data: user}))
   .catch(err => {
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error'
+      message: 'На сервере произошла ошибка'
     })
   });
 }
@@ -79,7 +79,7 @@ const patchProfile = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error'
+      message: 'На сервере произошла ошибка'
     })
   });
 }
@@ -104,7 +104,7 @@ const patchAvatar = (req, res) => {
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'Internal Server Error'
+      message: 'На сервере произошла ошибка'
     })
   });
 }
