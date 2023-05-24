@@ -22,6 +22,10 @@ app.use((req, res, next) => {
 
 app.use(router);
 
+app.use((req, res) => {
+  res.status(404).send({ message: 'Запрашиваемая страница не найдена' });
+});
+
 app.listen(3000, () => {
-  console.log('HELLO FUCKING WORLD');
+  console.log('Server running');
 });

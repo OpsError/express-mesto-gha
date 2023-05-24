@@ -1,7 +1,7 @@
 const User = require('../models/user');
+const mongoose = require('mongoose');
 
 const ERROR_CODES = {
-  CREATED: 201,
   INVALID_DATA: 400,
   NOT_FOUND: 404,
   DEFAULT_ERROR: 500
@@ -11,8 +11,8 @@ const ERROR_CODES = {
 const creacteUser = (req, res) => {
   const {name, about, avatar} = req.body;
 
-  User.create({name, about, avatar}, {runValidators: true})
-  .then(user => res.status(ERROR_CODES.CREATED).send({data: user}))
+  User.create({name, about, avatar})
+  .then(user => res.send({data: user}))
   .catch(err => {
     if (err.name === 'ValidationError') {
       res.status(ERROR_CODES.INVALID_DATA).send({
@@ -29,12 +29,11 @@ const creacteUser = (req, res) => {
 // информация о пользователе
 const getUserInfo = (req, res) => {
   User.findById(req.params.userId)
+  .orFail()
   .then(user => res.send({data: user}))
   .catch(err => {
-    if (err.name === 'CastError') {
-      res.status(ERROR_CODES.NOT_FOUND).send({
-        message: 'User Not Found'
-      });
+    if (err.name === 'DocumentNotFoundError') {
+      res.status(ERROR_CODES.NOT_FOUND).send({message: 'User Not Found'});
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
@@ -57,18 +56,19 @@ const getAllUsers = (req, res) => {
 //  обновить профиль
 const patchProfile = (req, res) => {
   const {name, about} = req.body;
+  if (!name || !about) {
+    res.status(ERROR_CODES.INVALID_DATA).send({
+      message: 'Invalid Data'
+    });
+    return;
+  }
   User.findByIdAndUpdate(req.user._id, {name, about}, {runValidators: true})
-  .then(user => res.status(ERROR_CODES.CREATED).send({data: user}))
+  .orFail()
+  .then(user => res.send({data: user}))
   .catch(err => {
     if (err.name === 'ValidationError') {
       res.status(ERROR_CODES.INVALID_DATA).send({
         message: 'Invalid Data'
-      });
-      return;
-    }
-    if (err.name === 'CastError') {
-      res.status(ERROR_CODES.NOT_FOUND).send({
-        message: "User Not Found"
       });
       return;
     }
@@ -89,11 +89,11 @@ const patchAvatar = (req, res) => {
   }
 
   User.findByIdAndUpdate(req.user._id, {avatar})
-  .then(user => res.status(ERROR_CODES.CREATED).send({data: user}))
+  .then(user => res.send({data: user}))
   .catch(err => {
-    if (err.name === 'CastError') {
-      res.status(ERROR_CODES.NOT_FOUND).send({
-        message: "User Not Found"
+    if (err.name === 'ValidationError') {
+      res.status(ERROR_CODES.INVALID_DATA).send({
+        message: 'Invalid Data'
       });
       return;
     }

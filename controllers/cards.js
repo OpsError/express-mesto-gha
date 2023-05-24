@@ -2,7 +2,6 @@ const Card = require('../models/card');
 const mongoose = require('mongoose');
 
 const ERROR_CODES = {
-  CREATED: 201,
   INVALID_DATA: 400,
   NOT_FOUND: 404,
   DEFAULT_ERROR: 500
@@ -11,7 +10,7 @@ const ERROR_CODES = {
 // получение всех карточек
 const getAllCards = (req, res) => {
   Card.find({})
-    .then((user) => res.status(ERROR_CODES.CREATED).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
       res.status(ERROR_CODES.DEFAULT_ERROR).send({
         message: 'Internal Server Error',
@@ -25,7 +24,7 @@ const postCard = (req, res) => {
   const owner = req.user._id;
 
   Card.create({name, link, owner})
-  .then(user => res.status(ERROR_CODES.CREATED).send({data: user}))
+  .then(user => res.send({data: user}))
   .catch(err => {
     if (err.name === 'ValidationError') {
       res.status(ERROR_CODES.INVALID_DATA).send({
@@ -41,13 +40,20 @@ const postCard = (req, res) => {
 
 // удалить карточку
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-  .then(user => res.send({data: user}))
+  if(!mongoose.Types.ObjectId.isValid(req.params.cardId)) {
+    res.status(ERROR_CODES.INVALID_DATA).send({
+      message: 'Invalid Data'
+    });
+    return;
+  }
+
+  Card.findByIdAndDelete(req.params.cardId)
+  .orFail()
+  .then(() => res.send({message: 'Card removed'}))
   .catch(err => {
-    if (err.name === 'CastError') {
-      res.status(ERROR_CODES.NOT_FOUND).send({
-        message: "Card Not Found"
-      });
+    console.log(err.name);
+    if (err.name === 'DocumentNotFoundError') {
+      res.status(ERROR_CODES.NOT_FOUND).send({message: 'Card Not Found'});
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
@@ -58,7 +64,7 @@ const deleteCard = (req, res) => {
 
 // поставить лайк
 const putLike = (req, res) => {
-  if(mongoose.Types.ObjectId.isValid(req.user._id)) {
+  if(!mongoose.Types.ObjectId.isValid(req.params.cardId)) {
     res.status(ERROR_CODES.INVALID_DATA).send({
       message: 'Invalid Data'
     });
@@ -67,12 +73,11 @@ const putLike = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, {
     $addToSet: {likes: req.user._id}
   }, {new: true})
+  .orFail()
   .then(user => res.send({data: user}))
   .catch(err => {
-    if(mongoose.Types.ObjectId.isValid(req.params.cardId)) {
-      res.status(ERROR_CODES.NOT_FOUND).send({
-        message: 'Card Not Found'
-      });
+    if (err.name === 'DocumentNotFoundError') {
+      res.status(ERROR_CODES.NOT_FOUND).send({message: 'Card Not Found'});
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
@@ -81,8 +86,9 @@ const putLike = (req, res) => {
   });
 }
 
+// dislike
 const deleteLike = (req, res) => {
-  if (mongoose.Types.ObjectId.isValid(req.user._id)) {
+  if (!mongoose.Types.ObjectId.isValid(req.user._id)) {
     res.status(ERROR_CODES.INVALID_DATA).send({
       message: 'Invalid Data'
     });
@@ -92,15 +98,11 @@ const deleteLike = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, {
     $pull: {likes: req.user._id}
   }, {new: true})
-  .orFail(() => {
-    throw new Error('NotFound');
-  })
+  .orFail()
   .then((user) => res.send({data: user}))
   .catch(err => {
-    if(mongoose.Types.ObjectId.isValid(req.params.cardId)) {
-      res.status(ERROR_CODES.NOT_FOUND).send({
-        message: 'Card Not Found'
-      });
+    if (err.name === 'DocumentNotFoundError') {
+      res.status(ERROR_CODES.NOT_FOUND).send({message: 'Card Not Found'});
       return;
     }
     res.status(ERROR_CODES.DEFAULT_ERROR).send({
