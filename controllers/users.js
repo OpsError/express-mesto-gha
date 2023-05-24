@@ -28,6 +28,12 @@ const creacteUser = (req, res) => {
 
 // информация о пользователе
 const getUserInfo = (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+    res.status(ERROR_CODES.INVALID_DATA).send({
+      message: 'Invalid Data'
+    });
+    return;
+  }
   User.findById(req.params.userId)
   .orFail()
   .then(user => res.send({data: user}))
@@ -62,7 +68,7 @@ const patchProfile = (req, res) => {
     });
     return;
   }
-  User.findByIdAndUpdate(req.user._id, {name, about}, {runValidators: true})
+  User.findByIdAndUpdate(req.user._id, {name, about}, { returnDocument: "after" })
   .orFail()
   .then(user => res.send({data: user}))
   .catch(err => {
@@ -88,7 +94,7 @@ const patchAvatar = (req, res) => {
     return;
   }
 
-  User.findByIdAndUpdate(req.user._id, {avatar})
+  User.findByIdAndUpdate(req.user._id, {avatar}, { returnDocument: "after" })
   .then(user => res.send({data: user}))
   .catch(err => {
     if (err.name === 'ValidationError') {

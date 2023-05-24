@@ -51,7 +51,6 @@ const deleteCard = (req, res) => {
   .orFail()
   .then(() => res.send({message: 'Card removed'}))
   .catch(err => {
-    console.log(err.name);
     if (err.name === 'DocumentNotFoundError') {
       res.status(ERROR_CODES.NOT_FOUND).send({message: 'Card Not Found'});
       return;
@@ -88,7 +87,7 @@ const putLike = (req, res) => {
 
 // dislike
 const deleteLike = (req, res) => {
-  if (!mongoose.Types.ObjectId.isValid(req.user._id)) {
+  if (!mongoose.Types.ObjectId.isValid(req.params.cardId)) {
     res.status(ERROR_CODES.INVALID_DATA).send({
       message: 'Invalid Data'
     });
@@ -101,6 +100,7 @@ const deleteLike = (req, res) => {
   .orFail()
   .then((user) => res.send({data: user}))
   .catch(err => {
+    console.log(err.name);
     if (err.name === 'DocumentNotFoundError') {
       res.status(ERROR_CODES.NOT_FOUND).send({message: 'Card Not Found'});
       return;
