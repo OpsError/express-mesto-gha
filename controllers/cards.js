@@ -60,14 +60,11 @@ const putLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, {
     $addToSet: {likes: req.user._id}
   }, {new: true})
-  .orFail()
+  .orFail(() => {
+    throw new NotFound('Card Not Found');
+  })
   .then(user => res.send({data: user}))
-  .catch(err => {
-    if (err.name === 'DocumentNotFoundError') {
-      new(new NotFound('Card Not Found'));
-    }
-    next(err);
-  });
+  .catch(next);
 }
 
 // dislike
@@ -79,14 +76,11 @@ const deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, {
     $pull: {likes: req.user._id}
   }, {new: true})
-  .orFail()
+  .orFail(() => {
+    throw new NotFound('Card Not Found');
+  })
   .then((user) => res.send({data: user}))
-  .catch(err => {
-    if (err.name === 'DocumentNotFoundError') {
-      next( new NotFound('Card Not Found'));
-    }
-    next(err);
-  });
+  .catch(next);
 }
 
 module.exports = {
