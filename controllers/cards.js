@@ -2,7 +2,6 @@ const Card = require('../models/card');
 const mongoose = require('mongoose');
 const InvalidData = require('../errors/invalid-data-err');
 const NotFound = require('../errors/not-found-error');
-// const DefaultError = require('../errors/default-err');
 const AccessError = require('../errors/access-err');
 
 

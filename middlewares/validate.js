@@ -1,6 +1,7 @@
 const {celebrate, Joi} = require('celebrate');
+Joi.objectId = require('joi-objectid')(Joi);
 
-const urlPattern = /(https?):\/\/(w{3}\.)?(\w*\/*\W*\d*)*\.((png)?(jpg)?(jpeg)?(tiff)?(gif)?)?/;
+const urlPattern = /(https?):\/\/(w{3}\.)?(\w*\/*\W*\d*)*\./;
 
 const validateSignUp = celebrate({
   body: Joi.object().keys({
@@ -30,7 +31,7 @@ const validatePatchProfile = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30)
-  })
+  }).unknown(true)
 });
 
 const validatePatchAvatar = celebrate({
@@ -41,7 +42,7 @@ const validatePatchAvatar = celebrate({
 
 const validateParamsUser = celebrate({
   params: Joi.object().keys({
-    userId: Joi.object()
+    userId: Joi.objectId()
   })
 });
 

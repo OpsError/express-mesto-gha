@@ -46,7 +46,7 @@ const login = (req, res, next) => {
 const createUser = (req, res, next) => {
   const {name, about, avatar, email, password} = req.body;
 
-  if (!validator.isEmail(email) || !(avatar && validator.isDataURI(avatar))) {
+  if (!validator.isEmail(email)) {
     throw new InvalidData('Invalid Data');
   }
 
