@@ -23,7 +23,7 @@ const validateSignIn = celebrate({
 const validateCardBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().uri().pattern(new RegExp(urlPattern))
+    link: Joi.string().uri().pattern(new RegExp(urlPattern)).required()
   }).unknown(true)
 });
 
@@ -46,6 +46,12 @@ const validateParamsUser = celebrate({
   })
 });
 
+const validateCardParams = celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.objectId()
+  })
+});
+
 module.exports = {
   validateSignUp,
   validateSignIn,
@@ -53,4 +59,5 @@ module.exports = {
   validatePatchProfile,
   validatePatchAvatar,
   validateParamsUser,
+  validateCardParams
 }
