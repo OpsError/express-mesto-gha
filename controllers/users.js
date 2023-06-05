@@ -46,9 +46,10 @@ const login = (req, res, next) => {
 const createUser = (req, res, next) => {
   const {name, about, avatar, email, password} = req.body;
 
-  if (!validator.isEmail(email)) {
+  if (!validator.isEmail(email) || !(avatar && validator.isDataURI(avatar))) {
     throw new InvalidData('Invalid Data');
   }
+
 
   bcrypt.hash(password, 10)
   .then(hash => User.create({name, about, avatar, email, password: hash}))
@@ -70,7 +71,6 @@ const createUser = (req, res, next) => {
 
 // данные текущего пользователя
 const getCurrentInfo = (req, res, next) => {
-  console.log(req.user);
   if (!req.user._id) {
     throw new InvalidAuth('Необходима авторизация');
   }

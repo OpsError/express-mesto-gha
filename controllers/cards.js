@@ -7,7 +7,7 @@ const AccessError = require('../errors/access-err');
 
 
 // получение всех карточек
-const getAllCards = (req, res) => {
+const getAllCards = (req, res, next) => {
   Card.find({})
     .then((user) => res.send({ data: user }))
     .catch(next);

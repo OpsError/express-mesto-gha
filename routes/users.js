@@ -4,9 +4,9 @@ const {getCurrentInfo, getUserInfo, getAllUsers, patchProfile, patchAvatar } = r
 
 router.get('/', getAllUsers);
 
-router.get('/:userId', validateParamsUser, getUserInfo);
+router.get('/me', getCurrentInfo);
 
-router.get('/me',  getCurrentInfo);
+router.get('/:userId', validateParamsUser, getUserInfo);
 
 router.patch('/me', validatePatchProfile, patchProfile);
 

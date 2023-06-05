@@ -1,10 +1,12 @@
 const {celebrate, Joi} = require('celebrate');
 
+const urlPattern = /(https?):\/\/(w{3}\.)?(\w*\/*\W*\d*)*\.((png)?(jpg)?(jpeg)?(tiff)?(gif)?)?/;
+
 const validateSignUp = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
     about: Joi.string().min(2).max(30).default('Исследователь'),
-    avatar: Joi.string().uri().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+    avatar: Joi.string().uri().pattern(new RegExp(urlPattern)).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8)
   }).unknown(true)
@@ -20,7 +22,7 @@ const validateSignIn = celebrate({
 const validateCardBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().uri()
+    link: Joi.string().required().uri().pattern(new RegExp(urlPattern))
   }).unknown(true)
 });
 
@@ -33,13 +35,13 @@ const validatePatchProfile = celebrate({
 
 const validatePatchAvatar = celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().uri()
+    avatar: Joi.string().uri().pattern(new RegExp(urlPattern))
   })
 });
 
 const validateParamsUser = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().required()
+    userId: Joi.object()
   })
 });
 
