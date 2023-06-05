@@ -1,33 +1,90 @@
 const User = require('../models/user');
 const mongoose = require('mongoose');
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const InvalidData = require('../errors/invalid-data-err');
+const NotFound = require('../errors/not-found-error');
+const InvalidAuth = require('../errors/invalid-auth-err');
+const DuplicateError = require('../errors/duplicate-err');
 
-const ERROR_CODES = {
-  INVALID_DATA: 400,
-  NOT_FOUND: 404,
-  DEFAULT_ERROR: 500
+const MONGODB_ERROR = 11000;
+const SECRET_KEY = 'super-key';
+
+// авторизация
+const login = (req, res, next) => {
+  const {email, password} = req.body;
+
+  if (!validator.isEmail(email)) {
+    throw new InvalidData('Invalid Data');
+  }
+
+  User.findOne({email}).select('+password')
+  .orFail( () =>{
+      throw new NotFound('User Not Found')
+  })
+  .then(user => {
+    if (!user) {
+      throw new NotFound('User Not Found');
+    }
+
+    return Promise.all([user, bcrypt.compare(password, user.password)]);
+  })
+  .then(([user, matched])=> {
+    if (!matched) {
+      throw new InvalidAuth('Неверный логин или пароль');
+    }
+
+    const token = jwt.sign({ _id: user._id }, SECRET_KEY, {expiresIn: '7d'});
+    res.status(201).send({data: token});
+  })
+  .catch(next);
+
 }
 
 // создание нового пользователя
-const creacteUser = (req, res) => {
-  const {name, about, avatar} = req.body;
+const createUser = (req, res, next) => {
+  const {name, about, avatar, email, password} = req.body;
 
-  User.create({name, about, avatar})
-  .then(user => res.send({data: user}))
+  if (!validator.isEmail(email)) {
+    throw new InvalidData('Invalid Data');
+  }
+
+  bcrypt.hash(password, 10)
+  .then(hash => User.create({name, about, avatar, email, password: hash}))
+  .then(user => res.send({
+    name: user.name,
+    about: user.about,
+    avatar: user.avatar,
+    email: user.email
+  }))
   .catch(err => {
-    if (err.name === 'ValidationError') {
-      res.status(ERROR_CODES.INVALID_DATA).send({
-        message: 'Invalid Data'
-      });
-      return;
+    if (err.code === MONGODB_ERROR) {
+      next(new DuplicateError('Такая почта уже существует'));
     }
-    res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'На сервере произошла ошибка'
-    })
+    if (err.name === 'ValidationError') {
+      next(new InvalidData('Invalid Data'));
+    }
   });
 }
 
+// данные текущего пользователя
+const getCurrentInfo = (req, res, next) => {
+  console.log(req.user);
+  if (!req.user) {
+    throw new InvalidAuth('Необходима авторизация');
+  }
+
+  User.findById(req.user._id)
+  .orFail(() => {
+    throw new NotFound('User Not Found');
+  })
+  .then(user => res.send({data: user}))
+  .catch(next);
+}
+
 // информация о пользователе
-const getUserInfo = (req, res) => {
+const getUserInfo = (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
     res.status(ERROR_CODES.INVALID_DATA).send({
       message: 'Invalid Data'
@@ -39,80 +96,57 @@ const getUserInfo = (req, res) => {
   .then(user => res.send({data: user}))
   .catch(err => {
     if (err.name === 'DocumentNotFoundError') {
-      res.status(ERROR_CODES.NOT_FOUND).send({message: 'User Not Found'});
-      return;
+      next(new NotFound('User Not Found'));
     }
-    res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'На сервере произошла ошибка',
-    });
+    next(err);
   });
 }
 
 // информация о всех пользователях
-const getAllUsers = (req, res) => {
+const getAllUsers = (req, res, next) => {
   User.find({})
   .then(user => res.send({data: user}))
-  .catch(err => {
-    res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'На сервере произошла ошибка'
-    })
-  });
+  .catch(next);
 }
 
 //  обновить профиль
-const patchProfile = (req, res) => {
+const patchProfile = (req, res, next) => {
   const {name, about} = req.body;
   if (!name || !about) {
-    res.status(ERROR_CODES.INVALID_DATA).send({
-      message: 'Invalid Data'
-    });
-    return;
+    throw new InvalidData('Invalid Data');
   }
   User.findByIdAndUpdate(req.user._id, {name, about}, { returnDocument: "after" })
   .orFail()
   .then(user => res.send({data: user}))
   .catch(err => {
     if (err.name === 'ValidationError') {
-      res.status(ERROR_CODES.INVALID_DATA).send({
-        message: 'Invalid Data'
-      });
-      return;
+      next(new InvalidData('Invalid Data'));
     }
-    res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'На сервере произошла ошибка'
-    })
   });
 }
 
 // обновить аватарку
-const patchAvatar = (req, res) => {
+const patchAvatar = (req, res, next) => {
   const {avatar} = req.body;
   if (!avatar) {
-    res.status(ERROR_CODES.INVALID_DATA).send({
-      message: 'Invalid Data'
-    });
-    return;
+    throw new InvalidData('Invalid Data');
   }
 
   User.findByIdAndUpdate(req.user._id, {avatar}, { returnDocument: "after" })
   .then(user => res.send({data: user}))
   .catch(err => {
     if (err.name === 'ValidationError') {
-      res.status(ERROR_CODES.INVALID_DATA).send({
-        message: 'Invalid Data'
-      });
-      return;
+      next(new InvalidData('Invalid Data'));
     }
-    res.status(ERROR_CODES.DEFAULT_ERROR).send({
-      message: 'На сервере произошла ошибка'
-    })
   });
 }
 
 module.exports = {
-  creacteUser,
+  createUser,
   getUserInfo,
   getAllUsers,
   patchProfile,
-  patchAvatar
+  patchAvatar,
+  login,
+  getCurrentInfo
 }

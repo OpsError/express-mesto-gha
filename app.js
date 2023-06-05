@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const router = require('./routes/index');
+const {errors} = require('celebrate');
 
 const app = express();
 
@@ -12,18 +13,23 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '646a6ac344a963a8bff0cc09',
-  };
-
-  next();
-});
-
 app.use(router);
 
 app.use((req, res) => {
   res.status(404).send({ message: 'Запрашиваемая страница не найдена' });
+});
+
+app.use(errors());
+
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  console.log(err);
+
+  res.status(statusCode).send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message
+    });
 });
 
 app.listen(3000, () => {
