@@ -2,9 +2,9 @@ const {celebrate, Joi} = require('celebrate');
 
 const validateSignUp = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri(),
+    name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
+    about: Joi.string().min(2).max(30).default('Исследователь'),
+    avatar: Joi.string().uri().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8)
   }).unknown(true)
@@ -24,8 +24,30 @@ const validateCardBody = celebrate({
   }).unknown(true)
 });
 
+const validatePatchProfile = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30)
+  })
+});
+
+const validatePatchAvatar = celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().uri()
+  })
+});
+
+const validateParamsUser = celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().required()
+  })
+});
+
 module.exports = {
   validateSignUp,
   validateSignIn,
-  validateCardBody
+  validateCardBody,
+  validatePatchProfile,
+  validatePatchAvatar,
+  validateParamsUser,
 }

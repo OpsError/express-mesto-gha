@@ -21,11 +21,11 @@ const login = (req, res, next) => {
 
   User.findOne({email}).select('+password')
   .orFail( () =>{
-      throw new NotFound('User Not Found')
+      throw new InvalidAuth('Неверный логин или пароль')
   })
   .then(user => {
     if (!user) {
-      throw new NotFound('User Not Found');
+      throw new InvalidAuth('Неверный логин или пароль');
     }
 
     return Promise.all([user, bcrypt.compare(password, user.password)]);
@@ -36,7 +36,7 @@ const login = (req, res, next) => {
     }
 
     const token = jwt.sign({ _id: user._id }, SECRET_KEY, {expiresIn: '7d'});
-    res.status(201).send({data: token});
+    res.status(200).send({data: token});
   })
   .catch(next);
 
@@ -71,7 +71,7 @@ const createUser = (req, res, next) => {
 // данные текущего пользователя
 const getCurrentInfo = (req, res, next) => {
   console.log(req.user);
-  if (!req.user) {
+  if (!req.user._id) {
     throw new InvalidAuth('Необходима авторизация');
   }
 
@@ -79,17 +79,19 @@ const getCurrentInfo = (req, res, next) => {
   .orFail(() => {
     throw new NotFound('User Not Found');
   })
-  .then(user => res.send({data: user}))
+  .then(user => res.status(200).send({
+    name: user.name,
+    about: user.about,
+    avatar: user.avatar,
+    email: user.email
+  }))
   .catch(next);
 }
 
 // информация о пользователе
 const getUserInfo = (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
-    res.status(ERROR_CODES.INVALID_DATA).send({
-      message: 'Invalid Data'
-    });
-    return;
+    throw new InvalidData('Invalid Data');
   }
   User.findById(req.params.userId)
   .orFail()
