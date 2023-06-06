@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validatorLib = require('validator');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -13,24 +14,29 @@ const userSchema = new mongoose.Schema({
     required: false,
     minlength: 2,
     maxlength: 30,
-    default: 'Исследователь'
+    default: 'Исследователь',
   },
   avatar: {
     type: String,
     required: false,
-    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator(url) {
+        return validatorLib.isURL(url);
+      },
+      message: 'Invalid URL',
+    },
   },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   password: {
     type: String,
     required: true,
-    minlength: 8,
-    select: false
-  }
+    select: false,
+  },
 });
 
 module.exports = mongoose.model('user', userSchema);

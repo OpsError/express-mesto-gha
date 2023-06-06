@@ -1,6 +1,8 @@
 const router = require('express').Router();
-const {validateCardBody, validateCardParams} = require('../middlewares/validate');
-const {getAllCards, postCard, deleteCard, putLike, deleteLike} = require('../controllers/cards');
+const { validateCardBody, validateCardParams } = require('../middlewares/validate');
+const {
+  getAllCards, postCard, deleteCard, putLike, deleteLike,
+} = require('../controllers/cards');
 
 router.get('/', getAllCards);
 

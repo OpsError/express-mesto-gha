@@ -1,8 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const router = require('./routes/index');
-const {errors} = require('celebrate');
+const NotFound = require('./errors/not-found-error');
+const auth = require('./middlewares/auth');
 
 const app = express();
 
@@ -15,21 +17,20 @@ app.use(express.json());
 
 app.use(router);
 
-app.use((req, res) => {
-  res.status(404).send({ message: 'Запрашиваемая страница не найдена' });
+app.use(auth, (next) => {
+  next(new NotFound('Запрашиваемая страница не найдена'));
 });
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const { statusCode = 500, message } = err;
-  console.log(err);
 
   res.status(statusCode).send({
-      message: statusCode === 500
-        ? 'На сервере произошла ошибка'
-        : message
-    });
+    message: statusCode === 500
+      ? 'На сервере произошла ошибка'
+      : message,
+  });
 });
 
 app.listen(3000, () => {
