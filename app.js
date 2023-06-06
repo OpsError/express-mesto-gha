@@ -17,7 +17,7 @@ app.use(express.json());
 
 app.use(router);
 
-app.use(auth, (next) => {
+app.use(auth, (req, res, next) => {
   next(new NotFound('Запрашиваемая страница не найдена'));
 });
 
@@ -28,8 +28,8 @@ app.use((err, req, res) => {
 
   res.status(statusCode).send({
     message: statusCode === 500
-      ? 'На сервере произошла ошибка'
-      : message,
+      ? { message: 'На сервере произошла ошибка' }
+      : { message },
   });
 });
 

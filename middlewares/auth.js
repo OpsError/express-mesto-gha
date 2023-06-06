@@ -4,7 +4,7 @@ const InvalidAuth = require('../errors/invalid-auth-err');
 const SECRET_KEY = 'super-key';
 
 module.exports = (req, res, next) => {
-  const authorization = req.headers.authorization;
+  const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
     throw new InvalidAuth('Необходима авторизация');
@@ -13,12 +13,12 @@ module.exports = (req, res, next) => {
   const token = authorization.replace('Bearer ', '');
   let payloud;
 
-  try {
+  if (jwt.verify(token, SECRET_KEY)) {
     payloud = jwt.verify(token, SECRET_KEY);
-  } catch {
+  } else {
     throw new InvalidAuth('Необходима авторизация');
   }
 
   req.user = payloud;
   next();
-}
+};
