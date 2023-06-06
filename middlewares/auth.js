@@ -19,8 +19,6 @@ module.exports = (req, res, next) => {
     throw new InvalidAuth('Необходима авторизация');
   }
 
-  req.user =  {
-    _id: payloud
-  }
+  req.user = payloud;
   next();
 }

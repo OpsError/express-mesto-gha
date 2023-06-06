@@ -46,18 +46,11 @@ const validateParamsUser = celebrate({
   })
 });
 
-const validateCardParams = celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.objectId()
-  })
-});
-
 module.exports = {
   validateSignUp,
   validateSignIn,
   validateCardBody,
   validatePatchProfile,
   validatePatchAvatar,
-  validateParamsUser,
-  validateCardParams
+  validateParamsUser
 }

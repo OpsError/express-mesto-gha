@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const InvalidData = require('../errors/invalid-data-err');
 const NotFound = require('../errors/not-found-error');
 const AccessError = require('../errors/access-err');
+const card = require('../models/card');
 
 
 // получение всех карточек
@@ -38,7 +39,7 @@ const deleteCard = (req, res, next) => {
     throw new NotFound('Card Not Found');
   })
   .then((card)=> {
-    if (!card.owner === req.user._id) {
+    if (!(card.owner.toString() === req.user._id)) {
       throw new AccessError('Нет прав доступа');
     }
 
@@ -69,9 +70,10 @@ const putLike = (req, res, next) => {
 
 // dislike
 const deleteLike = (req, res, next) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.cardId)) {
+  if(!mongoose.Types.ObjectId.isValid(req.params.cardId)) {
     throw new InvalidData('Invalid Data');
   }
+  console.log(req.user);
 
   Card.findByIdAndUpdate(req.params.cardId, {
     $pull: {likes: req.user._id}
@@ -79,7 +81,7 @@ const deleteLike = (req, res, next) => {
   .orFail(() => {
     throw new NotFound('Card Not Found');
   })
-  .then((user) => res.send({data: user}))
+  .then(user => res.send({data: user}))
   .catch(next);
 }
 
