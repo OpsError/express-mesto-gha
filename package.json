@@ -26,7 +26,6 @@
     "nodemon": "^2.0.22"
   },
   "dependencies": {
-    "@babel/eslint-parser": "^7.21.8",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "celebrate": "^15.0.1",
