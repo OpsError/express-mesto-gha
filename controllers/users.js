@@ -53,11 +53,11 @@ const createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === MONGODB_ERROR) {
         next(new DuplicateError('Такая почта уже существует'));
-      } else if (err.name === 'ValidationError') {
-        next(new InvalidData('Invalid Data'));
-      } else {
-        next(err);
       }
+      if (err.name === 'ValidationError') {
+        next(new InvalidData('Invalid Data'));
+      }
+      next(err);
     });
 };
 
@@ -84,9 +84,8 @@ const getUserInfo = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
         next(new NotFound('User Not Found'));
-      } else {
-        next(err);
       }
+      next(err);
     });
 };
 
@@ -106,9 +105,8 @@ const patchProfile = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new InvalidData('Invalid Data'));
-      } else {
-        next(err);
       }
+      next(err);
     });
 };
 
@@ -120,9 +118,8 @@ const patchAvatar = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new InvalidData('Invalid Data'));
-      } else {
-        next(err);
       }
+      next(err);
     });
 };
 
