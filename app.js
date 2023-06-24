@@ -6,7 +6,7 @@ const router = require('./routes/index');
 const NotFound = require('./errors/not-found-error');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const cors = require('./middlewares/processingCORS');
+// const { responseCors } = require('./middlewares/processingCORS');
 
 const app = express();
 
@@ -15,9 +15,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
-app.use(cors);
-
 app.use(express.json());
+
+// app.use(responseCors);
 
 app.use(requestLogger);
 
